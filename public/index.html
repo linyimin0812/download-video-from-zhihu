@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://apps.bdimg.com/libs/bootstrap/3.3.0/css/bootstrap.min.css">
+  <script src="https://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="https://apps.bdimg.com/libs/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+  <style>
+    video {
+      display: block;
+      margin: 0 auto;
+      width: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <video id="video_id" height="600" controls="controls" poster="video/zhihu.jpeg">
+      <source src="" type="video/mp4"> Your browser does not support HTML5 video.
+    </video>
+    <div class="form-group">
+      <br />
+      <input type="text" class="form-control" id="video_url" placeholder="请输入知乎视频所在链接">
+      <br />
+      <input type="text" class="form-control" id="video_name" placeholder="请指定视频名称">
+    </div>
+    <button type="button" class="btn btn-primary btn-lg btn-block" onclick="getUrl()">确定</button>
+  </div>
+  <script>
+    function getUrl() {
+      const url = $('#video_url').val()
+      const name = $('#video_name').val()
+      $.ajax({
+        url: 'http://localhost:8000/download',
+        data: {'url': url, 'name': name},
+        success: async function(data) {
+          $("#video_id > source").attr("src", data)
+          console.log(data)
+          await $('#video_id').get(0).load()
+          $('#video_id').get(0).play()
+          console.log(data)
+        },
+        error: function (err) {
+          alert('adfdsafasdfdas')
+          alert(JSON.stringify(err))
+        }
+      })
+    }
+  </script>
+</body>
+
+</html>

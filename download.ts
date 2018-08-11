@@ -16,7 +16,7 @@ import { execSync } from 'child_process'
 import url from 'url'
 import cuid from 'cuid'
 
-const TARGET_VIDEO_DIR = `${__dirname}/video`
+const TARGET_VIDEO_DIR = `${__dirname}/public/video`
 // 1. get the url who want to contains the target video
 const rex = />https:\/\/www.zhihu.com\/video\/([0-9]+)</
 async function getM3u8BaseUrl(url: string): Promise<string> {
@@ -109,7 +109,7 @@ async function mergeTsFiles(sourceUrl: string, name: string) {
 
 // tranfer ts file to mp4 file
 
-async function convertTSFilesToMp4(sourceUrl: string, name: string) {
+async function convertTSFilesToMp4(sourceUrl: string, name: string): Promise<string> {
   const videoDir = await getVideoDir(sourceUrl)
   const tsFile = `${videoDir}/${name}.ts`
   if (! fs.existsSync(TARGET_VIDEO_DIR)) {
@@ -120,10 +120,8 @@ async function convertTSFilesToMp4(sourceUrl: string, name: string) {
   // if the video name has existed, then rename it
   if(fs.existsSync(TARGET_VIDEO_DIR + '/' + videoName)) {
     videoName = cuid() + '.mp4'
-    // TODO: need to notify the user
     console.log(`${name}.mp4 has exists, we have renamed the video with ${videoName}`)
   }
-
   mpegts_to_mp4(tsFile, TARGET_VIDEO_DIR + '/' + videoName, async (err) => {
     if(err){
         console.log("Error: "+err)
@@ -133,6 +131,7 @@ async function convertTSFilesToMp4(sourceUrl: string, name: string) {
     await rimraf_then(downloadRootDir)
     console.log("Done converting vids.")
   })
+  return videoName
 }
 
 async function getAllTsFile(sourceUrl: string): Promise<string[]> {
@@ -161,9 +160,9 @@ async function getVideoDir(sourceUrl: string): Promise<string> {
  * @param url: the page who contains the video 
  * @param name: specify a name for the downloaded video
  */
-export async function download(url: string, name?: string) {
+export async function download(url: string, name?: string): Promise<string> {
   name = name || cuid()
   await downloadTsFiles(url)
   await mergeTsFiles(url, name)
-  await convertTSFilesToMp4(url, name)
+  return await convertTSFilesToMp4(url, name)
 }
