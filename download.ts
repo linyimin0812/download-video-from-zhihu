@@ -6,7 +6,7 @@
 import request from 'request-promise'
 import unescape from 'unescape'
 import fs from 'fs'
-import path, { resolve } from 'path'
+import path from 'path'
 import rimraf_then from 'rimraf-then'
 
 import mpegts_to_mp4 from 'mpegts_to_mp4'
