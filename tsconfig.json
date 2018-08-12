@@ -17,11 +17,4 @@
       "node_modules/"
     , "dist/"
   ]
-  , "include": [
-       "bin/*.ts"
-     , "scripts/**/*.ts"
-     , "examples/**/*.ts"
-     , "src/**/*.ts"
-     , "tests/**/*.spec.ts"
-  ]
 }

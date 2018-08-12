@@ -138,6 +138,9 @@ async function getAllTsFile(sourceUrl: string): Promise<string[]> {
   const m3u8Url = await getM3u8BaseUrl(sourceUrl) 
   const myUrl = url.parse(m3u8Url)
   const host = myUrl.host
+  if (!myUrl.pathname) {
+    throw new Error('Please input a valid video link from zhihu')
+  }
   const pathname = myUrl.pathname.slice(0, myUrl.pathname.lastIndexOf('/'))
   const videoDir = `${__dirname}/${host}${pathname}`
   const tsFiles = fs.readdirSync(videoDir).filter((value) => {
@@ -150,6 +153,9 @@ async function getVideoDir(sourceUrl: string): Promise<string> {
   const m3u8Url = await getM3u8BaseUrl(sourceUrl) 
   const myUrl = url.parse(m3u8Url)
   const host = myUrl.host
+  if (!myUrl.pathname) {
+    throw new Error('Please input a valid video link from zhihu')
+  }
   const pathname = myUrl.pathname.slice(0, myUrl.pathname.lastIndexOf('/'))
   const videoDir = `${__dirname}/${host}${pathname}`
   return videoDir

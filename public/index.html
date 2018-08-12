@@ -7,7 +7,8 @@
   <link rel="stylesheet" href="https://apps.bdimg.com/libs/bootstrap/3.3.0/css/bootstrap.min.css">
   <script src="https://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
   <script src="https://apps.bdimg.com/libs/bootstrap/3.3.0/js/bootstrap.min.js"></script>
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.bootcss.com/axios/0.18.0/axios.min.js"></script>
+  <script src="./url.js"></script>
   <style>
     video {
       display: block;
@@ -19,7 +20,8 @@
 
 <body>
   <div class="container">
-    <video id="video_id" height="600" controls="controls" poster="video/zhihu.jpeg">
+    <br />
+    <video id="video_id" height="600" controls="controls" poster="picture/zhihu.jpeg">
       <source src="" type="video/mp4"> Your browser does not support HTML5 video.
     </video>
     <div class="form-group">
@@ -29,24 +31,41 @@
       <input type="text" class="form-control" id="video_name" placeholder="请指定视频名称">
     </div>
     <button type="button" class="btn btn-primary btn-lg btn-block" onclick="getUrl()">确定</button>
+    <br />
+    <p>注: 有些视频相对较大,请安心等待</p>
   </div>
   <script>
     function getUrl() {
+      $('#video_id').attr('poster', 'picture/loading.gif')
       const url = $('#video_url').val()
       const name = $('#video_name').val()
-      axios('http://localhost:8000/download', {
+      axios(`http://${HOST}:${PORT}/download`, {
         params: {
           url: url,
           name: name
         },
         responseType: 'blob'
       }).then(function (response) {
+
+        // play the video
+        const contentDisposition = response.headers['content-disposition']
+        // "attachment; filename="cjkr430fn000082khq7a69bl2.mp4""
+        const rex = /filename="([0-9a-z]+\.mp4)"/
+        const videoName = contentDisposition.match(rex)[1]
+        const myVideo = document.getElementsByTagName('video')[0]
+        myVideo.src = `http://${HOST}:${PORT}/video?name=${videoName}`
+        myVideo.load()
+        myVideo.play()
+        // Download the files
         const url = window.URL.createObjectURL(new Blob([response.data]))
         const link = document.createElement('a')
         link.href = url
-        link.setAttribute('download', name + '.mp4')
+        link.setAttribute('download', videoName)
         document.body.appendChild(link)
-        link.click();
+        link.click()
+        if (`${name}.mp4` !== videoName) {
+          alert(`the ${name}.mp4 of video has existed, we have rename it ${videoName} instead`)
+        }
       }).catch(err => {
         alert('error')
       })
