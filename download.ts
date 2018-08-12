@@ -6,16 +6,19 @@
 import request from 'request-promise'
 import unescape from 'unescape'
 import fs from 'fs'
-import path from 'path'
+import path, { resolve } from 'path'
 import rimraf_then from 'rimraf-then'
 
 import mpegts_to_mp4 from 'mpegts_to_mp4'
 
 import { execSync } from 'child_process'
 
+import { EventEmitter } from 'events'
+
 import url from 'url'
 import cuid from 'cuid'
 
+const event = new EventEmitter()
 const TARGET_VIDEO_DIR = `${__dirname}/public/video`
 // 1. get the url who want to contains the target video
 const rex = />https:\/\/www.zhihu.com\/video\/([0-9]+)</
@@ -122,16 +125,13 @@ async function convertTSFilesToMp4(sourceUrl: string, name: string): Promise<str
     videoName = cuid() + '.mp4'
     console.log(`${name}.mp4 has exists, we have renamed the video with ${videoName}`)
   }
-  mpegts_to_mp4(tsFile, TARGET_VIDEO_DIR + '/' + videoName, async (err) => {
-    if(err){
-        console.log("Error: "+err)
-    }
-    // remove all ts files
-    const downloadRootDir = path.join(videoDir, '../', '../')
-    await rimraf_then(downloadRootDir)
-    console.log("Done converting vids.")
-  })
-  return videoName
+  try {
+    await mpegtsToMp4(tsFile, videoDir, videoName)
+    return videoName
+  } catch (err) {
+    console.log(err)
+    throw new Error('there is some thing error')
+  }
 }
 
 async function getAllTsFile(sourceUrl: string): Promise<string[]> {
@@ -153,6 +153,21 @@ async function getVideoDir(sourceUrl: string): Promise<string> {
   const pathname = myUrl.pathname.slice(0, myUrl.pathname.lastIndexOf('/'))
   const videoDir = `${__dirname}/${host}${pathname}`
   return videoDir
+}
+
+async function mpegtsToMp4(tsFileName: string, videoDir: string, videoName: string): Promise<string> {
+  return new Promise<string> ((resolve, reject) => {
+    mpegts_to_mp4(tsFileName, TARGET_VIDEO_DIR + '/' + videoName, async (err) => {
+      if(err){
+          console.log("Error: "+err)
+      }
+      // remove all ts files
+      const downloadRootDir = path.join(videoDir, '../', '../')
+      await rimraf_then(downloadRootDir)
+      console.log("Done converting vids.")
+      resolve(videoName)
+    })
+  })
 }
 
 /**

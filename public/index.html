@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://apps.bdimg.com/libs/bootstrap/3.3.0/css/bootstrap.min.css">
   <script src="https://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
   <script src="https://apps.bdimg.com/libs/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <style>
     video {
       display: block;
@@ -33,20 +34,21 @@
     function getUrl() {
       const url = $('#video_url').val()
       const name = $('#video_name').val()
-      $.ajax({
-        url: 'http://localhost:8000/download',
-        data: {'url': url, 'name': name},
-        success: async function(data) {
-          $("#video_id > source").attr("src", data)
-          console.log(data)
-          await $('#video_id').get(0).load()
-          $('#video_id').get(0).play()
-          console.log(data)
+      axios('http://localhost:8000/download', {
+        params: {
+          url: url,
+          name: name
         },
-        error: function (err) {
-          alert('adfdsafasdfdas')
-          alert(JSON.stringify(err))
-        }
+        responseType: 'blob'
+      }).then(function (response) {
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', name + '.mp4')
+        document.body.appendChild(link)
+        link.click();
+      }).catch(err => {
+        alert('error')
       })
     }
   </script>
