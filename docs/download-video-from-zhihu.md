@@ -116,6 +116,8 @@
       ```
 
       ![下载的文件](https://github.com/linyimin-bupt/download-video-from-zhihu/blob/master/docs/tsfiles.png)
+      
+      
       至此,所有的ts相关的文件都会保存在`./{http-host}/{filename}`
 
 ### 将所有的ts 文件合并成一个大的ts文件
