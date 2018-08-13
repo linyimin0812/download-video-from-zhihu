@@ -87,7 +87,7 @@
 
 2. 选择playlist中的某一个列别,使用play_url下载所有ts文件病进行播放
 
-   ![](https://linyimin-bupt.github.io/download-video-from-zhihu/docs/play_url.png)
+   ![](https://github.com/linyimin-bupt/download-video-from-zhihu/blob/master/docs/play_url.png)
 
    根据以上的步骤,编写实现代码
 
@@ -115,7 +115,7 @@
       console.log('download all ts files done.')
       ```
 
-      ![下载的文件](https://linyimin-bupt.github.io/download-video-from-zhihu/docs/tsfiles.png)
+      ![下载的文件](https://github.com/linyimin-bupt/download-video-from-zhihu/blob/master/docs/tsfiles.png)
       至此,所有的ts相关的文件都会保存在`./{http-host}/{filename}`
 
 ### 将所有的ts 文件合并成一个大的ts文件
