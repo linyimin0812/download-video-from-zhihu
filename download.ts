@@ -13,12 +13,9 @@ import mpegts_to_mp4 from 'mpegts_to_mp4'
 
 import { execSync } from 'child_process'
 
-import { EventEmitter } from 'events'
-
 import url from 'url'
 import cuid from 'cuid'
 
-const event = new EventEmitter()
 const TARGET_VIDEO_DIR = `${__dirname}/public/video`
 // 1. get the url who want to contains the target video
 const rex = />https:\/\/www.zhihu.com\/video\/([0-9]+)</
