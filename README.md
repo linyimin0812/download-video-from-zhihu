@@ -25,5 +25,5 @@ ts-node index.ts
 
 5. Visit the download page
 ```
-http:localhost:8000
+http://localhost:8000
 ```
