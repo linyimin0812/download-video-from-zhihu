@@ -4,6 +4,8 @@ import path from 'path'
 import fs from 'fs'
 import express from 'express'
 
+import { log } from 'brolog'
+
 // video directory
 const VIDEO_DIR = path.join(
   __dirname,
@@ -32,11 +34,11 @@ app.use(function (req, res, next) {
 app.use(express.static('public'))
 // https://www.zhihu.com/question/279039888/answer/463839657
 app.get('/download', async (req, res) => {
-  const url = req.query.url
+  const url  = req.query.url
   const name = req.query.name
   download(url, name).then(videoName => {
     let currentFile = `${VIDEO_DIR}${videoName}`
-    console.log(currentFile)
+    log.info('index', '/download %s', currentFile)
     fs.exists(currentFile, function (exists) {
       if (exists) {
         res.download(currentFile)
@@ -47,7 +49,7 @@ app.get('/download', async (req, res) => {
       }
     })
   }).catch(err => {
-    console.log(err)
+    log.error('index', '/download fail %s', JSON.stringify(err))
     res.statusCode = 500
     res.end()
   })
@@ -55,8 +57,7 @@ app.get('/download', async (req, res) => {
 
 app.get('/video', (req, res) => {
   const videoName = req.query.name
-  console.log('name', videoName)
-  console.log(req.headers)
+  log.info('index', '/video %s', videoName)
   const videoPath = `${VIDEO_DIR}${videoName}`
   const videoState = fs.statSync(videoPath)
   // video file's size
@@ -82,7 +83,7 @@ app.get('/video', (req, res) => {
   } else {
     const head = {
       'Content-Length': videoSize,
-      'Content-Type': 'video/mp4',
+      'Content-Type'  : 'video/mp4',
     }
     res.writeHead(200, head)
     fs.createReadStream(videoPath).pipe(res)
@@ -90,5 +91,5 @@ app.get('/video', (req, res) => {
 })
 
 app.listen(8000, () => {
-  console.log('listen port 8000')
+  log.info('index', 'listen port 8000')
 })

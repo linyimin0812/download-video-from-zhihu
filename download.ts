@@ -13,6 +13,8 @@ import mpegts_to_mp4 from 'mpegts_to_mp4'
 
 import { execSync } from 'child_process'
 
+import { log } from 'brolog'
+
 import url from 'url'
 import cuid from 'cuid'
 
@@ -22,7 +24,7 @@ const rex = />https:\/\/www.zhihu.com\/video\/([0-9]+)</
 async function getM3u8BaseUrl(url: string): Promise<string> {
   try {
     const content: string = unescape(await request(url), '')
-    const matchResult = content.match(rex)
+    const matchResult     = content.match(rex)
     if (!matchResult) {
       throw new Error('there is not video exist')
     }
@@ -85,13 +87,13 @@ async function getM3u8BaseUrl(url: string): Promise<string> {
 async function downloadTsFiles(sourceUrl: string) {
   const m3u8Url = await getM3u8BaseUrl(sourceUrl)
   execSync(`download-m3u8 ${m3u8Url}`)
-  console.log('download all ts files done.')
+  log.info('download','downloadTsFiles(%s) ', sourceUrl, 'download all ts files done.')
 }
 
 // 3. merge ts files
 async function mergeTsFiles(sourceUrl: string, name: string) {
   const videoDir = await getVideoDir(sourceUrl)
-  const tsFiles = await getAllTsFile(sourceUrl)
+  const tsFiles  = await getAllTsFile(sourceUrl)
   for (let i = 0; i < tsFiles.length; i++) {
     tsFiles[i]  = `${videoDir}/${tsFiles[i]}`
   }
@@ -103,7 +105,7 @@ async function mergeTsFiles(sourceUrl: string, name: string) {
   // source file
   const sourceFiles = tsFiles.join(' ')
   execSync(`cat ${sourceFiles} > ${videoDir}/${name}.ts`)
-  console.log('merge ts files done.')
+  log.info('download', 'mergeTsFiles(%s, %s) ', sourceUrl, name, 'merge ts files done.')
   
 }
 
@@ -111,7 +113,7 @@ async function mergeTsFiles(sourceUrl: string, name: string) {
 
 async function convertTSFilesToMp4(sourceUrl: string, name: string): Promise<string> {
   const videoDir = await getVideoDir(sourceUrl)
-  const tsFile = `${videoDir}/${name}.ts`
+  const tsFile   = `${videoDir}/${name}.ts`
   if (! fs.existsSync(TARGET_VIDEO_DIR)) {
     fs.mkdirSync(TARGET_VIDEO_DIR)
   }
@@ -120,36 +122,36 @@ async function convertTSFilesToMp4(sourceUrl: string, name: string): Promise<str
   // if the video name has existed, then rename it
   if(fs.existsSync(TARGET_VIDEO_DIR + '/' + videoName)) {
     videoName = cuid() + '.mp4'
-    console.log(`${name}.mp4 has exists, we have renamed the video with ${videoName}`)
+    log.info('download', 'convertTSFilesToMp4(%s, %s) ', sourceUrl, name, `${name}.mp4 has exists, we have renamed the video with ${videoName}`)
   }
   try {
     await mpegtsToMp4(tsFile, videoDir, videoName)
     return videoName
   } catch (err) {
-    console.log(err)
+    log.error('download','convertTSFilesToMp4(%s, %s) fail: %s',sourceUrl, name, err)
     throw new Error('there is some thing error')
   }
 }
 
 async function getAllTsFile(sourceUrl: string): Promise<string[]> {
-  const m3u8Url = await getM3u8BaseUrl(sourceUrl) 
-  const myUrl = url.parse(m3u8Url)
-  const host = myUrl.host
+  const m3u8Url = await getM3u8BaseUrl(sourceUrl)
+  const myUrl   = url.parse(m3u8Url)
+  const host    = myUrl.host
   if (!myUrl.pathname) {
     throw new Error('Please input a valid video link from zhihu')
   }
   const pathname = myUrl.pathname.slice(0, myUrl.pathname.lastIndexOf('/'))
   const videoDir = `${__dirname}/${host}${pathname}`
-  const tsFiles = fs.readdirSync(videoDir).filter((value) => {
+  const tsFiles  = fs.readdirSync(videoDir).filter((value) => {
     return 'ts' === value.split('.')[1]
   })
   return tsFiles
 }
 
 async function getVideoDir(sourceUrl: string): Promise<string> {
-  const m3u8Url = await getM3u8BaseUrl(sourceUrl) 
-  const myUrl = url.parse(m3u8Url)
-  const host = myUrl.host
+  const m3u8Url = await getM3u8BaseUrl(sourceUrl)
+  const myUrl   = url.parse(m3u8Url)
+  const host    = myUrl.host
   if (!myUrl.pathname) {
     throw new Error('Please input a valid video link from zhihu')
   }
@@ -162,12 +164,12 @@ async function mpegtsToMp4(tsFileName: string, videoDir: string, videoName: stri
   return new Promise<string> ((resolve, reject) => {
     mpegts_to_mp4(tsFileName, TARGET_VIDEO_DIR + '/' + videoName, async (err) => {
       if(err){
-          console.log("Error: "+err)
+          log.error('download', 'mpegtsToMp4 Error: ', JSON.stringify(err))
       }
       // remove all ts files
       const downloadRootDir = path.join(videoDir, '../', '../')
       await rimraf_then(downloadRootDir)
-      console.log("Done converting vids.")
+      log.info('download', 'mpegtsToMp4 %s', 'Done converting vids.')
       resolve(videoName)
     })
   })
